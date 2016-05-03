@@ -4,7 +4,8 @@ var numString = '',
     screenArray = [],
     answerFlag = false,
     symbol,
-    numTally = 0
+    numTally = 0,
+    result
 
 $(() => {
     $('span').on('click', function() {
@@ -12,13 +13,13 @@ $(() => {
         if (symbol.search(/[0-9]/g) != -1) {
             if (answerFlag === true) {
                 answerFlag = false
-                screenArray = []
+                clear()
             }
             numString += symbol //add more numbers to string
             numTally++ //prove there was number input
             screenArray.push(' ', symbol, ' ')
         } else {
-            if (answerFlag === true) {
+            if (answerFlag === true) { //previous answer in array
                 answerFlag = false
                 numTally++
             }
@@ -43,11 +44,7 @@ $(() => {
                         break;
                     }
                 case 'C':
-                    numTally = 0
-                    numString = ''
-                    numArray = []
-                    opArray = []
-                    screenArray = []
+                    clear()
                     break;
             }
         }
@@ -56,45 +53,54 @@ $(() => {
 
         function operator(symbol) {
             numTally = 0
-            numArray.push(parseInt(numString))
+            if (numString != '') {
+                numArray.push(parseInt(numString))
+            }
             opArray.push(symbol)
             screenArray.push(' ', symbol, ' ')
             numString = ''
+        }
+
+        function clear() {
+            result = 0
+            numTally = 0
+            numString = ''
+            numArray = []
+            opArray = []
+            screenArray = []
         }
 
         function showAnswer() {
             answerFlag = true
             opArray.pop()
             while (opArray.length > 0) {
-                var firstNum = numArray[numArray.length - 2]
-                var secondNum = numArray[numArray.length - 1]
-                var lastOp = opArray[opArray.length - 1]
-                var result = 0
-                if (lastOp === '/') {
+                var firstNum = numArray[0]
+                var secondNum = numArray[1]
+                var firstOp = opArray[0]
+                result = 0
+                if (firstOp === '/') {
                     result = Math.round(firstNum / secondNum * 100) / 100
-                    numArray.pop()
-                    numArray.pop()
-                    opArray.pop()
-                } else if (lastOp === 'x') {
+                    shiftArrays()
+                } else if (firstOp === 'x') {
                     result = firstNum * secondNum
-                    numArray.pop()
-                    numArray.pop()
-                    opArray.pop()
-                } else if (lastOp === '+') {
+                    shiftArrays()
+                } else if (firstOp === '+') {
                     result = firstNum + secondNum
-                    numArray.pop()
-                    numArray.pop()
-                    opArray.pop()
-                } else if (lastOp === '-') {
+                    shiftArrays()
+                } else if (firstOp === '-') {
                     result = firstNum - secondNum
-                    numArray.pop()
-                    numArray.pop()
-                    opArray.pop()
+                    shiftArrays()
                 }
-                numArray.push(result)
+                numArray.unshift(result)
             }
-            result = Math.round(result * 100) / 100
+            result = Math.round(numArray[0] * 100) / 100
             screenArray.push(result)
+        }
+
+        function shiftArrays() {
+            numArray.shift()
+            numArray.shift()
+            opArray.shift()
         }
 
     })
